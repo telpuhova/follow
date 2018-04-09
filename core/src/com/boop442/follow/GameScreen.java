@@ -11,16 +11,6 @@ import com.badlogic.gdx.math.Vector3;
 
 public class GameScreen implements Screen {
 
-    public enum State
-    {
-        PAUSE,
-        RUN,
-        RESUME,
-        STOPPED
-    }
-
-    private GameScreen.State state = GameScreen.State.RUN;
-
     SpriteBatch batch;
     OrthographicCamera camera;
 
@@ -91,22 +81,7 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
 
-        switch (state)
-        {
-            case RUN:
-                run();
-                break;
-            case PAUSE:
-//                Gdx.app.log("Follow.java", "-------------PAUSE----------------");
-
-                break;
-            case RESUME:
-
-                break;
-
-            default:
-                break;
-        }
+        run();
     }
 
     public void run() {
@@ -143,7 +118,8 @@ public class GameScreen implements Screen {
 //            iter.remove();
 
             //level complete
-            this.state = GameScreen.State.PAUSE;
+            game.setScreen(new MainMenuScreen(game));
+            dispose();
         }
     }
 
