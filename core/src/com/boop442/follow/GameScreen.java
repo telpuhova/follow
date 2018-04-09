@@ -118,7 +118,7 @@ public class GameScreen implements Screen {
 //            iter.remove();
 
             //level complete
-            game.setScreen(new MainMenuScreen(game));
+            game.setScreen(new LevelCompleteMenuScreen(game));
             dispose();
         }
     }
