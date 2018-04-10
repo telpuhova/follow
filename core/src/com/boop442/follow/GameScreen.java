@@ -143,6 +143,13 @@ public class GameScreen implements Screen {
         TextureRegion followerFrame = walkAnimation.getKeyFrame(stateTime, true);
 
 
+        if (dot.x - follower.x >= 1) {
+            follower.x += 1;
+        }
+        else if (follower.x - dot.x >= 1) {
+            followerFrame.flip(true, false);
+            follower.x -= 1;
+        }
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
@@ -153,6 +160,12 @@ public class GameScreen implements Screen {
         batch.end();
 
 
+        // flipping back
+        if (follower.x - dot.x >= 1) {
+            followerFrame.flip(true, false);
+        }
+
+
         if (Gdx.input.isTouched()) {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
@@ -161,12 +174,6 @@ public class GameScreen implements Screen {
         }
 
 
-        if (dot.x - follower.x >= 1) {
-            follower.x += 1;
-        }
-        else if (follower.x - dot.x >= 1) {
-            follower.x -= 1;
-        }
 
         if(follower.overlaps(exit)) {
             Gdx.app.log("Follow.java", "-------------OVERLAPS----------------");
