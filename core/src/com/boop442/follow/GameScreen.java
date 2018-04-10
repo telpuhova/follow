@@ -8,8 +8,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.TimeUtils;
+
+import java.util.Iterator;
 
 public class GameScreen implements Screen {
 
@@ -19,12 +25,15 @@ public class GameScreen implements Screen {
     private Rectangle follower;
     private Rectangle dot;
     private Rectangle exit;
-    private Rectangle barrier;
+//    private Rectangle barrier;
+    private Array<Rectangle> barriers;
+
 
     Vector3 touchPos = new Vector3();
 
     private Texture dotImage;
-    private Texture followerImage;
+    Animation<TextureRegion> followerAnimation; // Must declare frame type (TextureRegion)
+    private Texture followerSheet;
     private Texture exitImage;
     private Texture barrierImage;
 
@@ -35,15 +44,16 @@ public class GameScreen implements Screen {
     // Constant rows and columns of the sprite sheet
     private static final int FRAME_COLS = 6, FRAME_ROWS = 5;
 
-    // Objects used
-    Animation<TextureRegion> walkAnimation; // Must declare frame type (TextureRegion)
-    Texture walkSheet;
-
     // A variable for tracking elapsed time for the animation
     float stateTime;
 
 
+    float followerHead_x;
+    float followerHead_y;
 
+    boolean goingRight;
+
+    Rectangle intersection;
 
 
 
@@ -62,10 +72,33 @@ public class GameScreen implements Screen {
         // load the images for the droplet and the bucket, 64x64 pixels each
         dotImage = new Texture(Gdx.files.internal("red_dot_64px.png"));
         exitImage = new Texture(Gdx.files.internal("shining_128px.png"));
+        barrierImage = new Texture(Gdx.files.internal("test.jpg"));
+
+
 
         // Load the sprite sheet as a Texture
-        walkSheet = new Texture(Gdx.files.internal("sprite-animation4.png"));
+        followerSheet = new Texture(Gdx.files.internal("sprite-animation4.png"));
 
+        // create a 2D array of TextureRegions
+        TextureRegion[][] tmp = TextureRegion.split(followerSheet,
+                followerSheet.getWidth() / FRAME_COLS,
+                followerSheet.getHeight() / FRAME_ROWS);
+
+        // place the regions into a 1D array. (from the top left, going across first)
+        // (The Animation constructor requires a 1D array.)
+        TextureRegion[] followerFrames = new TextureRegion[FRAME_COLS * FRAME_ROWS];
+        int index = 0;
+        for (int i = 0; i < FRAME_ROWS; i++) {
+            for (int j = 0; j < FRAME_COLS; j++) {
+                followerFrames[index++] = tmp[i][j];
+            }
+        }
+
+        // Initialize the Animation with the frame interval and array of frames
+        followerAnimation = new Animation<TextureRegion>(0.025f, followerFrames);
+
+        // time to 0
+        stateTime = 0f;
 
 
 
@@ -91,28 +124,10 @@ public class GameScreen implements Screen {
         exit.width = 128;
         exit.height = 128;
 
+        barriers = new Array<Rectangle>();
+        createBarrier();
 
-        // create a 2D array of TextureRegions
-        TextureRegion[][] tmp = TextureRegion.split(walkSheet,
-                walkSheet.getWidth() / FRAME_COLS,
-                walkSheet.getHeight() / FRAME_ROWS);
-
-        // place the regions into a 1D array. (from the top left, going across first)
-        // (The Animation constructor requires a 1D array.)
-        TextureRegion[] walkFrames = new TextureRegion[FRAME_COLS * FRAME_ROWS];
-        int index = 0;
-        for (int i = 0; i < FRAME_ROWS; i++) {
-            for (int j = 0; j < FRAME_COLS; j++) {
-                walkFrames[index++] = tmp[i][j];
-            }
-        }
-
-        // Initialize the Animation with the frame interval and array of frames
-        walkAnimation = new Animation<TextureRegion>(0.025f, walkFrames);
-
-        // time to 0
-        stateTime = 0f;
-
+        intersection = new Rectangle();
 
 
 
@@ -127,9 +142,17 @@ public class GameScreen implements Screen {
 
     }
 
+    private void createBarrier() {
+        Rectangle barrier = new Rectangle();
+        barrier.x = MathUtils.random(0, 800-64);
+        barrier.y = 20;
+        barrier.width = 64;
+        barrier.height = 64;
+        barriers.add(barrier);
+    }
+
     @Override
     public void render(float delta) {
-
         run();
     }
 
@@ -145,17 +168,18 @@ public class GameScreen implements Screen {
         stateTime += Gdx.graphics.getDeltaTime(); // Accumulate elapsed animation time
 
         // Get current frame of animation for the current stateTime
-        TextureRegion followerFrame = walkAnimation.getKeyFrame(stateTime, true);
+        TextureRegion followerFrame = followerAnimation.getKeyFrame(stateTime, true);
 
 
-        float followerHead_x = follower.x + follower.width/2;
-        float followerHead_y = follower.y + follower.height;
+        followerHead_x = follower.x + follower.width/2;
+        followerHead_y = follower.y + follower.height;
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
         if (dot.x - followerHead_x >= 1) {
             //goes right
+            goingRight = true;
             follower.x += 1;
             batch.draw(followerFrame, follower.x, follower.y);
 
@@ -165,6 +189,7 @@ public class GameScreen implements Screen {
         }
         else if (followerHead_x - dot.x >= 1) {
             //goes left
+            goingRight = false;
             followerFrame.flip(true, false);
             follower.x -= 1;
             batch.draw(followerFrame, follower.x, follower.y);
@@ -173,14 +198,14 @@ public class GameScreen implements Screen {
             if (follower.y > 20) {
                 follower.y = follower.y - 1;
             }
-        } else if (dot.y - follower.y >= 200){
+        } else if (dot.y - follower.y >= 250){
             //stands still
             batch.draw(followerFrame, follower.x, follower.y);
 
             if (follower.y > 20) {
                 follower.y = follower.y - 1;
             }
-        } else if (dot.y - follower.y < 200){
+        } else if (dot.y - follower.y < 250){
             //jumps
             if (dot.y - followerHead_y < 10) {
                 game.setScreen(new LevelCompleteMenuScreen(game));
@@ -194,7 +219,11 @@ public class GameScreen implements Screen {
 //        batch.draw(followerImage, follower.x, follower.y);
         batch.draw(dotImage, dot.x, dot.y);
         batch.draw(exitImage, exit.x, exit.y);
-        batch.end();
+
+
+
+
+
 
 
 
@@ -207,6 +236,41 @@ public class GameScreen implements Screen {
         }
 
 
+        Iterator<Rectangle> iter = barriers.iterator();
+        while(iter.hasNext()) {
+            Rectangle barrier = iter.next();
+            batch.draw(barrierImage, barrier.x, barrier.y);
+//            raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
+//            if(raindrop.y + 64 < 0) iter.remove();
+
+
+
+            if(barrier.overlaps(follower)) {
+
+                Intersector.intersectRectangles(barrier, follower, intersection);
+                if(intersection.x + intersection.width < barrier.x + barrier.width) {
+                    //Intersects with left side
+                    barrier.x++;
+                }
+                if(intersection.x > barrier.x) {
+                    //Intersects with right side
+                    barrier.x--;
+                }
+                if(intersection.y > barrier.y) {
+                    //Intersects with top side
+                    follower.y = barrier.y + barrier.height;
+                }
+                if(intersection.y + intersection.height < barrier.y + barrier.height) {
+                    //Intersects with bottom side
+
+                }
+
+//                dropSound.play();
+//                iter.remove();
+            }
+        }
+
+        batch.end();
 
         if(follower.overlaps(exit)) {
             Gdx.app.log("Follow.java", "-------------OVERLAPS----------------");
@@ -249,6 +313,6 @@ public class GameScreen implements Screen {
         batch.dispose();
         dotImage.dispose();
         exitImage.dispose();
-        walkSheet.dispose();
+        followerSheet.dispose();
     }
 }
