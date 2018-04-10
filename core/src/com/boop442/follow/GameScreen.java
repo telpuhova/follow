@@ -19,12 +19,14 @@ public class GameScreen implements Screen {
     private Rectangle follower;
     private Rectangle dot;
     private Rectangle exit;
+    private Rectangle barrier;
 
     Vector3 touchPos = new Vector3();
 
     private Texture dotImage;
     private Texture followerImage;
     private Texture exitImage;
+    private Texture barrierImage;
 
     Follow game;
 
@@ -39,6 +41,9 @@ public class GameScreen implements Screen {
 
     // A variable for tracking elapsed time for the animation
     float stateTime;
+
+
+
 
 
 
@@ -143,27 +148,55 @@ public class GameScreen implements Screen {
         TextureRegion followerFrame = walkAnimation.getKeyFrame(stateTime, true);
 
 
-        if (dot.x - follower.x >= 1) {
-            follower.x += 1;
-        }
-        else if (follower.x - dot.x >= 1) {
-            followerFrame.flip(true, false);
-            follower.x -= 1;
-        }
+        float followerHead_x = follower.x + follower.width/2;
+        float followerHead_y = follower.y + follower.height;
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
+
+        if (dot.x - followerHead_x >= 1) {
+            //goes right
+            follower.x += 1;
+            batch.draw(followerFrame, follower.x, follower.y);
+
+            if (follower.y > 20) {
+                follower.y = follower.y - 1;
+            }
+        }
+        else if (followerHead_x - dot.x >= 1) {
+            //goes left
+            followerFrame.flip(true, false);
+            follower.x -= 1;
+            batch.draw(followerFrame, follower.x, follower.y);
+            followerFrame.flip(true, false);
+
+            if (follower.y > 20) {
+                follower.y = follower.y - 1;
+            }
+        } else if (dot.y - follower.y >= 200){
+            //stands still
+            batch.draw(followerFrame, follower.x, follower.y);
+
+            if (follower.y > 20) {
+                follower.y = follower.y - 1;
+            }
+        } else if (dot.y - follower.y < 200){
+            //jumps
+            if (dot.y - followerHead_y < 10) {
+                game.setScreen(new LevelCompleteMenuScreen(game));
+                dispose();
+            } else {
+                follower.y += 1;
+                batch.draw(followerFrame, follower.x, follower.y);
+            }
+        }
+
 //        batch.draw(followerImage, follower.x, follower.y);
-        batch.draw(followerFrame, follower.x, follower.y); // Draw current frame at (50, 50)
         batch.draw(dotImage, dot.x, dot.y);
         batch.draw(exitImage, exit.x, exit.y);
         batch.end();
 
 
-        // flipping back
-        if (follower.x - dot.x >= 1) {
-            followerFrame.flip(true, false);
-        }
 
 
         if (Gdx.input.isTouched()) {
