@@ -18,8 +18,10 @@ public class Follow extends Game {
 
     public SpriteBatch batch;
     public BitmapFont font;
+    public int level;
 
     public void create() {
+        level = 2;
         batch = new SpriteBatch();
         //Use LibGDX's default Arial font.
         font = new BitmapFont();
@@ -27,7 +29,7 @@ public class Follow extends Game {
     }
 
     public void render() {
-        super.render(); //important!
+        super.render();
     }
 
     public void dispose() {

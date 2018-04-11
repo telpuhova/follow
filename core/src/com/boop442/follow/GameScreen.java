@@ -17,6 +17,8 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.Iterator;
 
+import sun.rmi.runtime.Log;
+
 public class GameScreen implements Screen {
 
     SpriteBatch batch;
@@ -57,11 +59,10 @@ public class GameScreen implements Screen {
 
 
 
+
     public GameScreen(final Follow game) {
 
         this.game = game;
-
-        Gdx.app.log("Follow.java", "-------------CREATE----------------");
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false,800,480);
@@ -125,7 +126,7 @@ public class GameScreen implements Screen {
         exit.height = 128;
 
         barriers = new Array<Rectangle>();
-        createBarrier();
+        createBarriers();
 
         intersection = new Rectangle();
 
@@ -142,14 +143,53 @@ public class GameScreen implements Screen {
 
     }
 
-    private void createBarrier() {
-        Rectangle barrier = new Rectangle();
+    private void createBarriers() {
+        if (game.level == 1) {
+            Rectangle barrier = new Rectangle();
 //        barrier.x = MathUtils.random(0, 800-64);
-        barrier.x = 800 / 2 - 64 / 2;
-        barrier.y = 20;
-        barrier.width = 64;
-        barrier.height = 64;
-        barriers.add(barrier);
+            barrier.x = 800 / 2 - 64 / 2;
+            barrier.y = 20;
+            barrier.width = 64;
+            barrier.height = 64;
+            barriers.add(barrier);
+        } else if (game.level == 2) {
+            Rectangle barrier1 = new Rectangle();
+            Rectangle barrier2 = new Rectangle();
+//        barrier.x = MathUtils.random(0, 800-64);
+            barrier1.x = 800 / 2 + 64;
+            barrier1.y = 20;
+            barrier1.width = 64;
+            barrier1.height = 64;
+            barriers.add(barrier1);
+
+            barrier2.x = 800 / 2 - 64 * 2;
+            barrier2.y = 20;
+            barrier2.width = 64;
+            barrier2.height = 64;
+            barriers.add(barrier2);
+        } else if (game.level == 3) {
+            Rectangle barrier1 = new Rectangle();
+//        barrier.x = MathUtils.random(0, 800-64);
+            barrier1.x = 600;
+            barrier1.y = 20;
+            barrier1.width = 64;
+            barrier1.height = 64;
+            barriers.add(barrier1);
+
+            Rectangle barrier2 = new Rectangle();
+            barrier2.x = 400;
+            barrier2.y = 20;
+            barrier2.width = 64;
+            barrier2.height = 64;
+            barriers.add(barrier2);
+
+            Rectangle barrier3 = new Rectangle();
+            barrier3.x = 200;
+            barrier3.y = 20;
+            barrier3.width = 64;
+            barrier3.height = 64;
+            barriers.add(barrier3);
+        }
     }
 
     @Override
@@ -208,10 +248,10 @@ public class GameScreen implements Screen {
                 follower.y = follower.y - 1;
             }
         } else if (dot.y - follower.y < 250){
-            //jumps
+            //goes up
             if (dot.y - followerHead_y < 10) {
-                game.setScreen(new LevelCompleteMenuScreen(game));
-                dispose();
+                followerDied();
+
             } else {
                 follower.y += 1;
                 batch.draw(followerFrame, follower.x, follower.y);
@@ -226,10 +266,6 @@ public class GameScreen implements Screen {
 
 
 
-
-
-
-
         if (Gdx.input.isTouched()) {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
@@ -238,23 +274,26 @@ public class GameScreen implements Screen {
         }
 
 
-        Iterator<Rectangle> iter = barriers.iterator();
-        while(iter.hasNext()) {
-            Rectangle barrier = iter.next();
+//        Iterator<Rectangle> iter = barriers.iterator();
+
+//        while(iter.hasNext()) {
+//            Rectangle barrier = iter.next();
+        Rectangle barrier;
+
+        for (int i = 0; i < barriers.size; i++) {
+            barrier = barriers.get(i);
             batch.draw(barrierImage, barrier.x, barrier.y);
 //            raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
 //            if(raindrop.y + 64 < 0) iter.remove();
 
 
 
-            if(barrier.overlaps(follower)) {
+            if (follower.overlaps(barrier)) {
 
                 Intersector.intersectRectangles(barrier, follower, intersection);
-                if(intersection.y > barrier.y) {
+                if ((intersection.y > barrier.y) && (intersection.width > 10)) {
                     //Intersects with top side
-                    if (intersection.width > 10) {
-                        follower.y = barrier.y + barrier.height;
-                    }
+                    follower.y = barrier.y + barrier.height;
                 }
                 else if(intersection.x + intersection.width < barrier.x + barrier.width) {
                     //Intersects with left side
@@ -277,15 +316,26 @@ public class GameScreen implements Screen {
         batch.end();
 
         if(follower.overlaps(exit)) {
-            Gdx.app.log("Follow.java", "-------------OVERLAPS----------------");
+
 //            dropSound.play();
 //            iter.remove();
 
             //level complete
-//            levelComplete();
-//            game.setScreen(new LevelCompleteMenuScreen(game));
-//            dispose();
+            levelComplete();
+
         }
+    }
+
+    public void levelComplete() {
+        game.setScreen(new LevelCompleteMenuScreen(game));
+        game.level++;
+        dispose();
+    }
+
+    public void followerDied() {
+        game.setScreen(new followerDiedMenuScreen(game));
+        game.level = 0;
+        dispose();
     }
 
     @Override
