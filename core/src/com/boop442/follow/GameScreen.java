@@ -120,7 +120,7 @@ public class GameScreen implements Screen {
         dot.height = 64;
 
         exit = new Rectangle();
-        exit.x = -20;
+        exit.x = -60;
         exit.y = -10;
         exit.width = 128;
         exit.height = 128;
@@ -198,8 +198,8 @@ public class GameScreen implements Screen {
     }
 
     public void run() {
-        Gdx.gl.glClearColor(0, 0, 0.2f, 1);//openGL//dark blue screen
-//        Gdx.gl.glClearColor(1f, 1f, 1f, 1);//openGL//white screen
+//        Gdx.gl.glClearColor(0, 0, 0.2f, 1);//openGL//dark blue screen
+        Gdx.gl.glClearColor(1f, 1f, 1f, 1);//openGL//white screen
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);//openGL
         camera.update();
@@ -216,8 +216,47 @@ public class GameScreen implements Screen {
         followerHead_y = follower.y + follower.height;
 
         batch.setProjectionMatrix(camera.combined);
+
+
+
+
         batch.begin();
 
+
+        batch.draw(dotImage, dot.x, dot.y);
+        batch.draw(exitImage, exit.x, exit.y);
+
+
+
+        if (Gdx.input.isTouched()) {
+            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPos);
+            dot.x = touchPos.x - 64 / 2;
+            dot.y = touchPos.y - 64/2;
+        }
+
+
+        followerMoves(followerFrame); // FOLLOWER MOVING TOWARDS THE DOT
+
+        processBarriers(); // LOOPING through barriers
+
+
+        batch.end();
+
+
+
+        if (follower.x - exit.x < 40) {
+//            dropSound.play();
+//            iter.remove();
+
+            //level complete
+            levelComplete();
+
+        }
+    }
+
+
+    public void followerMoves(TextureRegion followerFrame) {
         if (dot.x - followerHead_x >= 1) {
             //goes right
             goingRight = true;
@@ -257,28 +296,13 @@ public class GameScreen implements Screen {
                 batch.draw(followerFrame, follower.x, follower.y);
             }
         }
-
-//        batch.draw(followerImage, follower.x, follower.y);
-        batch.draw(dotImage, dot.x, dot.y);
-        batch.draw(exitImage, exit.x, exit.y);
+    }
 
 
-
-
-
-        if (Gdx.input.isTouched()) {
-            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touchPos);
-            dot.x = touchPos.x - 64 / 2;
-            dot.y = touchPos.y - 64/2;
-        }
-
-
-//        Iterator<Rectangle> iter = barriers.iterator();
-
-//        while(iter.hasNext()) {
-//            Rectangle barrier = iter.next();
+    public void processBarriers() {
         Rectangle barrier;
+        Rectangle barrierNext;
+        boolean moving = false;
 
         for (int i = 0; i < barriers.size; i++) {
             barrier = barriers.get(i);
@@ -294,37 +318,59 @@ public class GameScreen implements Screen {
                 if ((intersection.y > barrier.y) && (intersection.width > 10)) {
                     //Intersects with top side
                     follower.y = barrier.y + barrier.height;
+                    moving = false;
                 }
-                else if(intersection.x + intersection.width < barrier.x + barrier.width) {
+                else if ((intersection.x + intersection.width < barrier.x + barrier.width) && (barrier.x + barrier.width < 800)) {
                     //Intersects with left side
                     barrier.x++;
+                    moving = true;
                 }
-                else if(intersection.x > barrier.x) {
+                else if ((intersection.x > barrier.x) && (barrier.x > 0)) {
                     //Intersects with right side
                     barrier.x--;
+                    moving = true;
                 }
                 else if(intersection.y + intersection.height < barrier.y + barrier.height) {
                     //Intersects with bottom side
-
+                    moving = false;
                 }
-
+                else {
+                    moving = false;
+                }
 //                dropSound.play();
 //                iter.remove();
             }
-        }
 
-        batch.end();
+            if (moving) {
+                for (int j = i; j < barriers.size; j++) {
+                    barrierNext = barriers.get(j);
 
-        if(follower.overlaps(exit)) {
+                    if (barrier.overlaps(barrierNext)) {
 
-//            dropSound.play();
-//            iter.remove();
-
-            //level complete
-            levelComplete();
-
+                        Intersector.intersectRectangles(barrier, barrierNext, intersection);
+                        if ((intersection.y > barrier.y) && (intersection.width > 10)) {
+                            //Intersects with top side
+                        }
+                        else if(intersection.x + intersection.width < barrier.x + barrier.width) {
+                            //Intersects with left side
+                            barrier.x--;
+                        }
+                        else if(intersection.x > barrier.x) {
+                            //Intersects with right side
+                            barrier.x++;
+                        }
+                        else if(intersection.y + intersection.height < barrier.y + barrier.height) {
+                            //Intersects with bottom side
+                        }
+//                dropSound.play();
+//                iter.remove();
+                    }
+                }
+            }
         }
     }
+
+
 
     public void levelComplete() {
         game.setScreen(new LevelCompleteMenuScreen(game));
