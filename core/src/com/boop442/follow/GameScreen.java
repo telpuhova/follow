@@ -106,7 +106,7 @@ public class GameScreen implements Screen {
 
 
         follower = new Rectangle();
-        follower.x = 800 / 2 - 64 / 2;
+        follower.x = 800 - 64;
         follower.y = 20;
         follower.width = 64;
         follower.height = 64;
@@ -144,7 +144,8 @@ public class GameScreen implements Screen {
 
     private void createBarrier() {
         Rectangle barrier = new Rectangle();
-        barrier.x = MathUtils.random(0, 800-64);
+//        barrier.x = MathUtils.random(0, 800-64);
+        barrier.x = 800 / 2 - 64 / 2;
         barrier.y = 20;
         barrier.width = 64;
         barrier.height = 64;
@@ -198,6 +199,7 @@ public class GameScreen implements Screen {
             if (follower.y > 20) {
                 follower.y = follower.y - 1;
             }
+
         } else if (dot.y - follower.y >= 250){
             //stands still
             batch.draw(followerFrame, follower.x, follower.y);
@@ -248,19 +250,21 @@ public class GameScreen implements Screen {
             if(barrier.overlaps(follower)) {
 
                 Intersector.intersectRectangles(barrier, follower, intersection);
-                if(intersection.x + intersection.width < barrier.x + barrier.width) {
+                if(intersection.y > barrier.y) {
+                    //Intersects with top side
+                    if (intersection.width > 10) {
+                        follower.y = barrier.y + barrier.height;
+                    }
+                }
+                else if(intersection.x + intersection.width < barrier.x + barrier.width) {
                     //Intersects with left side
                     barrier.x++;
                 }
-                if(intersection.x > barrier.x) {
+                else if(intersection.x > barrier.x) {
                     //Intersects with right side
                     barrier.x--;
                 }
-                if(intersection.y > barrier.y) {
-                    //Intersects with top side
-                    follower.y = barrier.y + barrier.height;
-                }
-                if(intersection.y + intersection.height < barrier.y + barrier.height) {
+                else if(intersection.y + intersection.height < barrier.y + barrier.height) {
                     //Intersects with bottom side
 
                 }
@@ -278,8 +282,9 @@ public class GameScreen implements Screen {
 //            iter.remove();
 
             //level complete
-            game.setScreen(new LevelCompleteMenuScreen(game));
-            dispose();
+//            levelComplete();
+//            game.setScreen(new LevelCompleteMenuScreen(game));
+//            dispose();
         }
     }
 
