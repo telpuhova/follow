@@ -21,7 +21,7 @@ public class Follow extends Game {
     public int level;
 
     public void create() {
-        level = 2;
+        level = 0;
         batch = new SpriteBatch();
         //Use LibGDX's default Arial font.
         font = new BitmapFont();

@@ -160,7 +160,7 @@ public class GameScreen implements Screen {
         dot.height = 64;
 
         exit = new Rectangle();
-        if (game.level == 2) {
+        if (game.level >= 1) {
             exit.x = -30;
             exit.y = 250;
         } else {
@@ -204,22 +204,22 @@ public class GameScreen implements Screen {
             barrier.width = 64;
             barrier.height = 64;
             barriers.add(barrier);
+//        } else if (game.level == 1) {
+//            Rectangle barrier1 = new Rectangle();
+//            Rectangle barrier2 = new Rectangle();
+////        barrier.x = MathUtils.random(0, 800-64);
+//            barrier1.x = 800 / 2 + 64;
+//            barrier1.y = 20;
+//            barrier1.width = 64;
+//            barrier1.height = 64;
+//            barriers.add(barrier1);
+//
+//            barrier2.x = 800 / 2 - 64 * 2;
+//            barrier2.y = 20;
+//            barrier2.width = 64;
+//            barrier2.height = 64;
+//            barriers.add(barrier2);
         } else if (game.level == 1) {
-            Rectangle barrier1 = new Rectangle();
-            Rectangle barrier2 = new Rectangle();
-//        barrier.x = MathUtils.random(0, 800-64);
-            barrier1.x = 800 / 2 + 64;
-            barrier1.y = 20;
-            barrier1.width = 64;
-            barrier1.height = 64;
-            barriers.add(barrier1);
-
-            barrier2.x = 800 / 2 - 64 * 2;
-            barrier2.y = 20;
-            barrier2.width = 64;
-            barrier2.height = 64;
-            barriers.add(barrier2);
-        } else if (game.level == 2) {
             Rectangle barrier1 = new Rectangle();
 //        barrier.x = MathUtils.random(0, 800-64);
             barrier1.x = 600;
@@ -241,7 +241,7 @@ public class GameScreen implements Screen {
             barrier3.width = 64;
             barrier3.height = 64;
             barriers.add(barrier3);
-        } else if (game.level >= 3) {
+        } else if (game.level >= 2) {
             Rectangle barrier1 = new Rectangle();
 //        barrier.x = MathUtils.random(0, 800-64);
             barrier1.x = 600;
@@ -276,7 +276,7 @@ public class GameScreen implements Screen {
         //SET UP
 
 //        Gdx.gl.glClearColor(0, 0, 0.2f, 1);//openGL//dark blue screen
-        Gdx.gl.glClearColor(0.85f, 0.85f, 0.85f, 1f);//openGL//white screen
+        Gdx.gl.glClearColor(0.9f, 0.9f, 0.9f, 1f);//openGL//white screen
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);//openGL
         camera.update();
@@ -306,7 +306,7 @@ public class GameScreen implements Screen {
         shapeRenderer.setColor(0.5f, 0.5f, 0.5f, 1);
         shapeRenderer.line(70, 20, 800, 20);
 
-        if (game.level == 2) {
+        if (game.level >= 1) {
             shapeRenderer.line(shelf.x, shelf.y, shelf.x + shelf.width, shelf.y + shelf.height);
         }
 
