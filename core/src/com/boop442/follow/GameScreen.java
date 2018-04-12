@@ -190,14 +190,6 @@ public class GameScreen implements Screen {
             barrier.height = 64;
             barriers.add(barrier);
         } else if (game.level == 1) {
-            Rectangle barrier = new Rectangle();
-//        barrier.x = MathUtils.random(0, 800-64);
-            barrier.x = 800 / 2 - 64 / 2;
-            barrier.y = 20;
-            barrier.width = 64;
-            barrier.height = 64;
-            barriers.add(barrier);
-        } else if (game.level == 2) {
             Rectangle barrier1 = new Rectangle();
             Rectangle barrier2 = new Rectangle();
 //        barrier.x = MathUtils.random(0, 800-64);
@@ -212,7 +204,29 @@ public class GameScreen implements Screen {
             barrier2.width = 64;
             barrier2.height = 64;
             barriers.add(barrier2);
-        } else if (game.level == 3) {
+        } else if (game.level == 2) {
+            Rectangle barrier1 = new Rectangle();
+//        barrier.x = MathUtils.random(0, 800-64);
+            barrier1.x = 600;
+            barrier1.y = 20;
+            barrier1.width = 64;
+            barrier1.height = 64;
+            barriers.add(barrier1);
+
+            Rectangle barrier2 = new Rectangle();
+            barrier2.x = 400;
+            barrier2.y = 20;
+            barrier2.width = 64;
+            barrier2.height = 64;
+            barriers.add(barrier2);
+
+            Rectangle barrier3 = new Rectangle();
+            barrier3.x = 200;
+            barrier3.y = 20;
+            barrier3.width = 64;
+            barrier3.height = 64;
+            barriers.add(barrier3);
+        } else if (game.level >= 3) {
             Rectangle barrier1 = new Rectangle();
 //        barrier.x = MathUtils.random(0, 800-64);
             barrier1.x = 600;
@@ -378,15 +392,25 @@ public class GameScreen implements Screen {
                     follower_body.y = barrier.y + barrier.height;
                     moving = false;
                 }
-                else if ((intersection.x + intersection.width < barrier.x + barrier.width) && (barrier.x + barrier.width < 800)) {
+                else if (intersection.x + intersection.width < barrier.x + barrier.width) {
                     //Intersects with left side
-                    barrier.x++;
-                    moving = true;
+                    if (barrier.x + barrier.width >= 800) {
+                        follower.x--;
+                        follower_body.x--;
+                    } else {
+                        barrier.x++;
+                        moving = true;
+                    }
                 }
-                else if ((intersection.x > barrier.x) && (barrier.x > 0)) {
+                else if (intersection.x > barrier.x) {
                     //Intersects with right side
-                    barrier.x--;
-                    moving = true;
+                    if (barrier.x <= 0) {
+                        follower.x++;
+                        follower_body.x++;
+                    } else {
+                        barrier.x--;
+                        moving = true;
+                    }
                 }
                 else if(intersection.y + intersection.height < barrier.y + barrier.height) {
                     //Intersects with bottom side
@@ -395,36 +419,41 @@ public class GameScreen implements Screen {
                 else {
                     moving = false;
                 }
+
+
+
 //                dropSound.play();
 //                iter.remove();
             }
 
-//            if (moving) {
-//                for (int j = i; j < barriers.size; j++) {
-//                    barrierNext = barriers.get(j);
-//
-//                    if (barrier.overlaps(barrierNext)) {
-//
-//                        Intersector.intersectRectangles(barrier, barrierNext, intersection);
-//                        if ((intersection.y > barrier.y) && (intersection.width > 10)) {
-//                            //Intersects with top side
-//                        }
-//                        else if(intersection.x + intersection.width < barrier.x + barrier.width) {
-//                            //Intersects with left side
-//                            barrier.x--;
-//                        }
-//                        else if(intersection.x > barrier.x) {
-//                            //Intersects with right side
-//                            barrier.x++;
-//                        }
-//                        else if(intersection.y + intersection.height < barrier.y + barrier.height) {
-//                            //Intersects with bottom side
-//                        }
-////                dropSound.play();
-////                iter.remove();
-//                    }
-//                }
-//            }
+            if (moving) {
+
+                for (int j = 0; j < barriers.size; j++) {
+//                    if (j == i) { continue; }
+                    barrierNext = barriers.get(j);
+
+                    if (barrier.overlaps(barrierNext)) {
+
+                        Intersector.intersectRectangles(barrier, barrierNext, intersection);
+                        if (intersection.y > barrier.y) {
+                            //Intersects with top side
+                        }
+                        else if (intersection.x + intersection.width < barrier.x + barrier.width) {
+                            //Intersects with left side
+                            barrierNext.x--;
+                        }
+                        else if (intersection.x > barrier.x) {
+                            //Intersects with right side
+                            barrierNext.x++;
+                        }
+                        else if (intersection.y + intersection.height < barrier.y + barrier.height) {
+                            //Intersects with bottom side
+                        }
+//                dropSound.play();
+//                iter.remove();
+                    }
+                }
+            }
         }
     }
 
