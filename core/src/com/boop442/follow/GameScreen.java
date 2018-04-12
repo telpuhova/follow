@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
@@ -28,6 +29,7 @@ public class GameScreen implements Screen {
     private Rectangle follower_body;
     private Rectangle dot;
     private Rectangle exit;
+    private Rectangle shelf;
 //    private Rectangle barrier;
     private Array<Rectangle> barriers;
 
@@ -64,6 +66,8 @@ public class GameScreen implements Screen {
     boolean goingRight;
 
     Rectangle intersection;
+
+    ShapeRenderer shapeRenderer = new ShapeRenderer();
 
 
 
@@ -144,9 +148,9 @@ public class GameScreen implements Screen {
 
         follower_body = new Rectangle();
         follower_body.x = 800 - 44;
-        follower_body.y = 20;
+        follower_body.y = 16;
         follower_body.width = 48;
-        follower_body.height = 64;
+        follower_body.height = 60;
 
 
         dot = new Rectangle();
@@ -156,10 +160,21 @@ public class GameScreen implements Screen {
         dot.height = 64;
 
         exit = new Rectangle();
-        exit.x = -30;
-        exit.y = -20;
+        if (game.level == 2) {
+            exit.x = -30;
+            exit.y = 250;
+        } else {
+            exit.x = -30;
+            exit.y = -20;
+        }
         exit.width = 128;
         exit.height = 128;
+
+        shelf = new Rectangle();
+        shelf.x = 0;
+        shelf.y = 250;
+        shelf.width = 350;
+        shelf.height = 5;
 
         barriers = new Array<Rectangle>();
         createBarriers();
@@ -285,7 +300,17 @@ public class GameScreen implements Screen {
 
         batch.setProjectionMatrix(camera.combined);
 
+        shapeRenderer.setProjectionMatrix(camera.combined);
 
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(0.5f, 0.5f, 0.5f, 1);
+        shapeRenderer.line(70, 20, 800, 20);
+
+        if (game.level == 2) {
+            shapeRenderer.line(shelf.x, shelf.y, shelf.x + shelf.width, shelf.y + shelf.height);
+        }
+
+        shapeRenderer.end();
 
 
         batch.begin();
@@ -312,12 +337,10 @@ public class GameScreen implements Screen {
 
 
         //CHECKS IF USER WON
-        if (follower.x - exit.x < 40) {
-//            dropSound.play();
-//            iter.remove();
-
+        if ((exit.x - follower.x < 10) && (follower.x + follower.width - exit.x - exit.width < 10) && (exit.y - follower.y < 40) && (follower.y + follower.height - exit.y - exit.height < 40)) {
             levelComplete();
         }
+
     }
 
 
@@ -365,6 +388,16 @@ public class GameScreen implements Screen {
                 follower.y++;
                 follower_body.y++;
                 batch.draw(followerFrame_up, follower.x, follower.y);
+            }
+        }
+
+        if (follower_body.overlaps(shelf)) {
+
+            Intersector.intersectRectangles(shelf, follower_body, intersection);
+            if ((intersection.y > shelf.y) && (intersection.width > 10)) {
+                //Intersects with top side
+                follower.y = shelf.y + shelf.height;
+                follower_body.y = shelf.y + shelf.height;
             }
         }
     }
