@@ -80,7 +80,7 @@ public class GameScreen implements Screen {
 
         // load the images for the droplet and the bucket, 64x64 pixels each
         dotImage = new Texture(Gdx.files.internal("black-blue_dot_64px.png"));
-        exitImage = new Texture(Gdx.files.internal("shining_128px.png"));
+        exitImage = new Texture(Gdx.files.internal("shining_128px4.png"));
         barrierImage = new Texture(Gdx.files.internal("test.jpg"));
 
 
@@ -143,9 +143,9 @@ public class GameScreen implements Screen {
 
 
         follower_body = new Rectangle();
-        follower_body.x = 800 - 40;
+        follower_body.x = 800 - 44;
         follower_body.y = 20;
-        follower_body.width = 40;
+        follower_body.width = 48;
         follower_body.height = 64;
 
 
@@ -156,8 +156,8 @@ public class GameScreen implements Screen {
         dot.height = 64;
 
         exit = new Rectangle();
-        exit.x = -60;
-        exit.y = -10;
+        exit.x = -30;
+        exit.y = -20;
         exit.width = 128;
         exit.height = 128;
 
