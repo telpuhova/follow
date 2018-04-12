@@ -20,7 +20,7 @@ public class LevelCompleteMenuScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0.2f, 1);
+        Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
@@ -28,7 +28,7 @@ public class LevelCompleteMenuScreen implements Screen {
 
         game.batch.begin();
         game.font.draw(game.batch, "Next Level", 350, 280);
-        game.font.draw(game.batch, "Tap to begin", 345, 250);
+        game.font.draw(game.batch, "Tap to begin", 345, 245);
         game.batch.end();
 
         if (Gdx.input.isTouched()) {
